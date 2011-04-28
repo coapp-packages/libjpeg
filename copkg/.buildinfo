@@ -14,7 +14,7 @@ x86 {
      
     targets: { 
         // main library
-        "libjpeg\Release\jpeg.lib"
+        "Release\jpeg.lib",
         
         // extra utilities
         "cjpeg\Release\cjpeg.exe",
