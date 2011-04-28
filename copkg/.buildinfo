@@ -1,0 +1,53 @@
+/* target information */
+ 
+#product-info  {
+    product-name: "libjpeg";
+    version: "8c";
+    original-source-location: "http://ijg.org/files/jpegsr8c.zip";
+    original-source-website: "http://ijg.org";
+    license: "Custom license, see README";
+    packager: "Rafael Rivera <rafael@withinwindows.com>";
+}
+ 
+x86 {
+    compiler: vc10-x86;
+     
+    targets: { 
+        // main library
+        "libjpeg\Release\jpeg.lib"
+        
+        // extra utilities
+        "cjpeg\Release\cjpeg.exe",
+        "djpeg\Release\djpeg.exe",
+        "jpegtran\Release\jpegtran.exe",
+        "rdjpgcom\Release\rdjpgcom.exe",
+        "wrjpgcom\Release\wrjpgcom.exe",
+    };
+     
+    build-command:@"
+        copy jconfig.vc jconfig.h       
+        copy makejsln.v10 makejsln.sln
+        copy makeasln.v10 makeasln.sln
+        copy makejvcx.v10 jpeg.vcxproj
+        copy makecvcx.v10 cjpeg.vcxproj
+        copy makedvcx.v10 djpeg.vcxproj
+        copy maketvcx.v10 jpegtran.vcxproj
+        copy makewvcx.v10 wrjpgcom.vcxproj
+        copy makervcx.v10 rdjpgcom.vcxproj
+        msbuild /p:Platform=Win32 /p:Configuration=Release makejsln.sln
+        msbuild /p:Platform=Win32 /p:Configuration=Release makeasln.sln
+    ";
+     
+    clean-command:@"
+        attrib -S -H -R *
+        del /Q *.sdf *.suo *.sln *.vcxproj *.user jconfig.h 2>NUL
+        rmdir /S /Q Release 2>NUL
+        
+        rmdir /S /Q cjpeg 2>NUL
+        rmdir /S /Q djpeg 2>NUL
+        rmdir /S /Q ipch 2>NUL
+        rmdir /S /Q jpegtran 2>NUL
+        rmdir /S /Q rdjpgcom 2>NUL
+        rmdir /S /Q wrjpgcom 2>NUL
+    ";
+};
