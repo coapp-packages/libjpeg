@@ -1,0 +1,8 @@
+// details for x64 version of libjpeg package
+// build with: autopackage x64.autopkg libjpeg.autopkg  
+@import "libjpeg.inc";
+
+#define { 
+    flavor: "vc10"; 
+    arch : "x64";
+}

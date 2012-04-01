@@ -1,0 +1,8 @@
+// details for x86 version of libjpeg package
+// build with: autopackage libjpeg-dev[vc10]-x86.autopkg
+@import "libjpeg-dev.inc" ;
+
+#define { 
+    flavor: "vc10"; 
+    arch : "x86";
+}
