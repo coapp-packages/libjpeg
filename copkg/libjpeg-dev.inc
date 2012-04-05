@@ -24,7 +24,7 @@ metadata {
 }
 
 files[libs] {
-    root: @"..\output\vc10\x86\Release\bin\";
+    root: @"..\output\vc10\${arch}\Release\bin\";
     
     include: {
         "*.lib",

@@ -5,12 +5,35 @@ package {
     name: "libjpeg[${flavor}]";
     version: "${package-version}";
     arch : "${arch}";
-    
     display-name: "libjpeg";
     location: "http://coapp.org/repository/${OutputFilename}";
-
     feed: "http://coapp.org/repository/packages.atom.xml";
     publisher: "CoApp Project";
+}
+
+metadata {
+    summary: "liblibjpeg";
+    description:  @"libjpeg"; 
+    icon: @"libjpeg.png";
+    author-version : "8c";
+    bug-tracker: "https://github.com/coapp-packages/libjpeg/issues";
+    stability : "0";
+    licenses : {
+        GPL
+    };
+}
+
+license[GPL] {
+    license-url: "";
+    license-type: "GPL";
+}
+
+compatability-policy {
+    minimum: "8.3.0.0";
+    maximum: "${OneLessThanCurrent}"; // this is the default
+    versions : {
+        "8.0",
+    }; // if not specified, find the versions by looking at the feeds and finding all the major/minor versions in range.
 }
 
 files[exes] {
@@ -23,7 +46,6 @@ files[exes] {
     trim-path: all;
 };
 
-
 files[dlls] {
     root: @"..\output\vc10\${arch}\Release\bin";
   
@@ -34,11 +56,6 @@ files[dlls] {
     trim-path: all;
 };
 
-license[GPL] {
-    license-url: "";
-    license-type: "GPL";
-}
-
 files[files-to-sign] {
     include: { 
         exes,
@@ -46,39 +63,15 @@ files[files-to-sign] {
     };    
 }
 
-metadata {
-    summary: "liblibjpeg";
-    description:  @"libjpeg"; 
-
-    icon: @"libjpeg.png";
-    
-    author-version : "8c";
-    bug-tracker: "https://github.com/coapp-packages/libjpeg/issues";
-    stability : "0";
-    licenses : {
-        GPL
-    };
-}
-
-compatability-policy {
-    minimum: "8.3.0.0";
-    maximum: "${OneLessThanCurrent}"; // this is the default
-    versions : {
-        "8.0",
-    }; // if not specified, find the versions by looking at the feeds and finding all the major/minor versions in range.
-}
-
-application {
+assembly[libjpeg[${flavor}]] {
     include : {
-        exes,
+        dlls
     };
 }
 
-manifest[things-that-need-them] {
-    // all of our EXEs need to get the manifest entries for the assemblies we're creating in this package
-    
+manifest[forexes] {
     assembly : {
-        libjpeg
+        "libjpeg[${flavor}]"
     };
     
     include : { 
@@ -86,9 +79,9 @@ manifest[things-that-need-them] {
     };
 }
 
-assembly[libjpeg] {
+application {
     include : {
-        dlls
+        exes,
     };
 }
 

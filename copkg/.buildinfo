@@ -43,7 +43,7 @@ package {
         coapp --force-scan list 
         autopackage libjpeg[vc10]-x64.autopkg libjpeg-dev[vc10]-x64.autopkg || goto failed
         coapp --force-scan list 
-        coapp remove-feed %cd%\
+        coapp delete-feed %cd%\
         ptk update-version
     ";
 
