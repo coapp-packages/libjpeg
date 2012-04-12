@@ -12,10 +12,55 @@
  
 
 test {
+    set: COMPILERS="${COMPILERS??vc10}";
     default : false;
     uses: release;
     build-command: @"
-	    rem";
+	    for %%A in (${COMPILERS}) do (
+            pushd output\%%A\x64\Release\bin\
+            rem do tests here
+            djpeg ..\..\..\..\..\testorig.jpg testout.jpg
+            fc /B testout.jpg ..\..\..\..\..\testimg.ppm
+            if ERRORLEVEL 1 goto failed
+
+            djpeg -bmp -color 256 ..\..\..\..\..\testorig.jpg testout.bmp
+            fc /B testout.bmp ..\..\..\..\..\testimg.bmp
+            if ERRORLEVEL 1 goto failed
+            
+            cjpeg ..\..\..\..\..\testimg.ppm testout.jpg
+            fc /B testout.jpg ..\..\..\..\..\testimg.jpg
+            if ERRORLEVEL 1 goto failed
+
+            cjpeg -progressive -optimize ..\..\..\..\..\testimg.ppm testout.jpg
+            fc /B testout.jpg ..\..\..\..\..\testimgp.jpg
+            if ERRORLEVEL 1 goto failed
+
+            popd
+
+            pushd output\%%A\x64\Release\bin\
+            djpeg ..\..\..\..\..\testorig.jpg testout.jpg
+            fc /B testout.jpg ..\..\..\..\..\testimg.ppm
+            if ERRORLEVEL 1 goto failed
+            
+            djpeg -bmp -color 256 ..\..\..\..\..\testorig.jpg testout.bmp
+            fc /B testout.bmp ..\..\..\..\..\testimg.bmp
+            if ERRORLEVEL 1 goto failed
+            
+            cjpeg ..\..\..\..\..\testimg.ppm testout.jpg
+            fc /B testout.jpg ..\..\..\..\..\testimg.jpg
+            if ERRORLEVEL 1 goto failed
+
+            cjpeg -progressive -optimize ..\..\..\..\..\testimg.ppm testout.jpg
+            fc /B testout.jpg ..\..\..\..\..\testimgp.jpg
+            if ERRORLEVEL 1 goto failed
+
+            goto passed
+:failed
+            echo ""Test(s) failed""
+:passed
+            popd
+        )
+    ";
 };
 
 package {
@@ -69,33 +114,43 @@ update-version {
 }
 
 release {
-    set: BuildCfg="Release";
-    uses: x86;
-    uses: x64;
+    set: COMPILERS="${COMPILERS??vc10}";
+
+    build-command: @"
+        for %%A in (${COMPILERS}) do (
+           ptk x86 --CONFIG=Release --COMP=%%A
+           ptk x64 --CONFIG=Release --COMP=%%A
+        )
+    ";
 };
 
 sign {
     default : false;
     uses: release;
-    build-command: @"simplesigner.exe --nologo --sign output\vc10\x86\Release\bin**.dll output\vc10\x86\Release\bin\**.exe output\vc10\x64\Release\bin\**.dll output\vc10\x64\Release\bin\**.exe";
+    build-command: @"simplesigner.exe --nologo --sign output\**.dll output\**.exe";
 };
 
 
 x86 {
-    compiler: vc10;
-    platform: x86;
+    set: {
+        CONFIG="${CONFIG??Release}";
+        COMP="${COMP??vc10}";
+    };
+
+    compiler:"${COMP}";
+    platform:x86;
      
     targets: { 
         // main library
-        "output\vc10\x86\Release\bin\jpeg.lib",
-        "output\vc10\x86\Release\bin\jpegs.lib",
-        "output\vc10\x86\Release\bin\jpeg.dll",                
+        "output\${COMP}\x86\${CONFIG}\bin\jpeg.lib",
+        "output\${COMP}\x86\${CONFIG}\bin\jpegs.lib",
+        "output\${COMP}\x86\${CONFIG}\bin\jpeg.dll",                
         // extra utilities
-        "output\vc10\x86\Release\bin\cjpeg.exe",
-        "output\vc10\x86\Release\bin\djpeg.exe",
-        "output\vc10\x86\Release\bin\jpegtran.exe",
-        "output\vc10\x86\Release\bin\rdjpgcom.exe",
-        "output\vc10\x86\Release\bin\wrjpgcom.exe",
+        "output\${COMP}\x86\${CONFIG}\bin\cjpeg.exe",
+        "output\${COMP}\x86\${CONFIG}\bin\djpeg.exe",
+        "output\${COMP}\x86\${CONFIG}\bin\jpegtran.exe",
+        "output\${COMP}\x86\${CONFIG}\bin\rdjpgcom.exe",
+        "output\${COMP}\x86\${CONFIG}\bin\wrjpgcom.exe",
     };
      
     build-command:@"
@@ -121,20 +176,25 @@ x86 {
 };
 
 x64 {
-    compiler: vc10;
+    set: {
+        CONFIG="${CONFIG??Release}";
+        COMP="${COMP??vc10}";
+    };
+
+    compiler:"${COMP}";
     platform: x64;
      
     targets: { 
         // main library
-        "output\vc10\x64\Release\bin\jpeg.lib",
-        "output\vc10\x64\Release\bin\jpegs.lib",
-        "output\vc10\x64\Release\bin\jpeg.dll",        
+        "output\${COMP}\x64\${CONFIG}\bin\jpeg.lib",
+        "output\${COMP}\x64\${CONFIG}\bin\jpegs.lib",
+        "output\${COMP}\x64\${CONFIG}\bin\jpeg.dll",                
         // extra utilities
-        "output\vc10\x64\Release\bin\cjpeg.exe",
-        "output\vc10\x64\Release\bin\djpeg.exe",
-        "output\vc10\x64\Release\bin\jpegtran.exe",
-        "output\vc10\x64\Release\bin\rdjpgcom.exe",
-        "output\vc10\x64\Release\bin\wrjpgcom.exe",
+        "output\${COMP}\x64\${CONFIG}\bin\cjpeg.exe",
+        "output\${COMP}\x64\${CONFIG}\bin\djpeg.exe",
+        "output\${COMP}\x64\${CONFIG}\bin\jpegtran.exe",
+        "output\${COMP}\x64\${CONFIG}\bin\rdjpgcom.exe",
+        "output\${COMP}\x64\${CONFIG}\bin\wrjpgcom.exe",
     };
      
     build-command:@"
@@ -148,8 +208,8 @@ x64 {
         copy maketvcx.v10 jpegtran.vcxproj
         copy makewvcx.v10 wrjpgcom.vcxproj
         copy makervcx.v10 rdjpgcom.vcxproj
-        msbuild /p:Platform=x64 /p:Configuration=Release makejsln.sln
-        msbuild /p:Platform=x64 /p:Configuration=Release makeasln.sln
+        msbuild /p:Platform=x64 /p:Configuration=${CONFIG} makejsln.sln
+        msbuild /p:Platform=x64 /p:Configuration=${CONFIG} makeasln.sln
     ";
      
     clean-command:@"
