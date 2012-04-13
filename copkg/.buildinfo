@@ -12,62 +12,55 @@
  
 
 test {
-    set: COMPILERS="${COMPILERS??vc10}";
+    set: {
+        COMPILERS="${COMPILERS??vc10}";
+        PLAT="${PLAT??x86,x64}";
+    };
+
     default : false;
     uses: release;
     build-command: @"
 	    for %%A in (${COMPILERS}) do (
-            pushd output\%%A\x64\Release\bin\
-            rem do tests here
-            djpeg ..\..\..\..\..\testorig.jpg testout.jpg
-            fc /B testout.jpg ..\..\..\..\..\testimg.ppm
-            if ERRORLEVEL 1 goto failed
-
-            djpeg -bmp -color 256 ..\..\..\..\..\testorig.jpg testout.bmp
-            fc /B testout.bmp ..\..\..\..\..\testimg.bmp
-            if ERRORLEVEL 1 goto failed
-            
-            cjpeg ..\..\..\..\..\testimg.ppm testout.jpg
-            fc /B testout.jpg ..\..\..\..\..\testimg.jpg
-            if ERRORLEVEL 1 goto failed
-
-            cjpeg -progressive -optimize ..\..\..\..\..\testimg.ppm testout.jpg
-            fc /B testout.jpg ..\..\..\..\..\testimgp.jpg
-            if ERRORLEVEL 1 goto failed
-
-            popd
-
-            pushd output\%%A\x64\Release\bin\
-            djpeg ..\..\..\..\..\testorig.jpg testout.jpg
-            fc /B testout.jpg ..\..\..\..\..\testimg.ppm
-            if ERRORLEVEL 1 goto failed
-            
-            djpeg -bmp -color 256 ..\..\..\..\..\testorig.jpg testout.bmp
-            fc /B testout.bmp ..\..\..\..\..\testimg.bmp
-            if ERRORLEVEL 1 goto failed
-            
-            cjpeg ..\..\..\..\..\testimg.ppm testout.jpg
-            fc /B testout.jpg ..\..\..\..\..\testimg.jpg
-            if ERRORLEVEL 1 goto failed
-
-            cjpeg -progressive -optimize ..\..\..\..\..\testimg.ppm testout.jpg
-            fc /B testout.jpg ..\..\..\..\..\testimgp.jpg
-            if ERRORLEVEL 1 goto failed
-
-            goto passed
-:failed
-            echo ""Test(s) failed""
-:passed
-            popd
+            for %%B in (${PLAT}) do (
+                call :testroutine ""%%A"" ""%%B""
+            )
         )
+        goto :eof
+
+:testroutine
+        pushd output\%~1\%~2\Release\bin\
+                
+        djpeg ..\..\..\..\..\testorig.jpg testout.jpg
+        fc /B testout.jpg ..\..\..\..\..\testimg.ppm
+        if ERRORLEVEL 1 goto failed
+
+        djpeg -bmp -color 256 ..\..\..\..\..\testorig.jpg testout.bmp
+        fc /B testout.bmp ..\..\..\..\..\testimg.bmp
+        if ERRORLEVEL 1 goto failed
+        
+        cjpeg ..\..\..\..\..\testimg.ppm testout.jpg
+        fc /B testout.jpg ..\..\..\..\..\testimg.jpg
+        if ERRORLEVEL 1 goto failed
+
+        cjpeg -progressive -optimize ..\..\..\..\..\testimg.ppm testout.jpg
+        fc /B testout.jpg ..\..\..\..\..\testimgp.jpg
+        if ERRORLEVEL 1 goto failed
+
+        goto passed
+:failed
+        echo ""Test(s) failed for (%~1,%~2)""
+:passed
+        popd
+        goto :eof
     ";
 };
 
 package {
-    
+    set: COMP="${COMP??vc10}";
+    set: PLAT="${PLAT??x86, x64}";
     default : false;
     uses : sign;
-    
+
     targets: { 
         @"copkg\libjpeg[vc10]-${package-version}-x86.msi",
         @"copkg\libjpeg-dev[vc10]-${package-version}-x86.msi",
@@ -75,25 +68,21 @@ package {
         @"copkg\libjpeg[vc10]-${package-version}-x64.msi",
         @"copkg\libjpeg-dev[vc10]-${package-version}-x64.msi"
     };
-    
+ 
     build-command : @"
-        REM THERE IS SOME GOOFY STUFF IN HERE TO WORK AROUND A COUPLE BUGS IN AUTOPACKAGE.
-        REM FIXES COMING SOON...
-        cd COPKG
-        coapp add-feed %cd%\
-        coapp --force-scan list 
+        pushd COPKG
         autopackage libjpeg-dev-common.autopkg || goto failed
-        coapp --force-scan list 
-        autopackage libjpeg[vc10]-x86.autopkg libjpeg-dev[vc10]-x86.autopkg || goto failed
-        coapp --force-scan list 
-        autopackage libjpeg[vc10]-x64.autopkg libjpeg-dev[vc10]-x64.autopkg || goto failed
-        coapp --force-scan list 
-        coapp delete-feed %cd%\
+        
+        for %%A in (${COMP}) do (
+            for %%B in (${PLAT}) do (
+                autopackage --COMP=%%A --PLAT=%%B libjpeg.autopkg libjpeg-dev.autopkg || goto failed
+            )
+        )
+        popd
         ptk update-version
     ";
 
 	clean-command: @"del COPKG\*.msi COPKG\*.wixpdb";
-	
 };
 
 
@@ -103,23 +92,29 @@ update-version {
     build-command : @"
         REM auto-increment version.inc file...
         
-        cd COPKG
+        pushd COPKG
         setlocal EnableDelayedExpansion
         for /F ""tokens=4,5,6,7  delims=.; "" %%v in (version.inc) do (
             set /a build=%%y + 1
             set VERSTRING=#define { package-version: %%v.%%w.%%x.!build!; }
         )
         echo !VERSTRING! > version.inc
+        popd
     ";
 }
 
 release {
-    set: COMPILERS="${COMPILERS??vc10}";
+    set: {
+        COMPILERS="${COMPILERS??vc10}";
+        PLAT="${PLAT??x86, x64}";
+        CONFIG="Release";
+    };
 
     build-command: @"
         for %%A in (${COMPILERS}) do (
-           ptk x86 --CONFIG=Release --COMP=%%A
-           ptk x64 --CONFIG=Release --COMP=%%A
+            for %%B in (${PLAT}) do (
+			    ptk -nologo base --CONFIG=${CONFIG} --COMP=%%A --PLAT=%%B
+		    )
         )
     ";
 };
@@ -132,69 +127,36 @@ sign {
 
 
 x86 {
-    set: {
-        CONFIG="${CONFIG??Release}";
-        COMP="${COMP??vc10}";
-    };
-
-    compiler:"${COMP}";
-    platform:x86;
-     
-    targets: { 
-        // main library
-        "output\${COMP}\x86\${CONFIG}\bin\jpeg.lib",
-        "output\${COMP}\x86\${CONFIG}\bin\jpegs.lib",
-        "output\${COMP}\x86\${CONFIG}\bin\jpeg.dll",                
-        // extra utilities
-        "output\${COMP}\x86\${CONFIG}\bin\cjpeg.exe",
-        "output\${COMP}\x86\${CONFIG}\bin\djpeg.exe",
-        "output\${COMP}\x86\${CONFIG}\bin\jpegtran.exe",
-        "output\${COMP}\x86\${CONFIG}\bin\rdjpgcom.exe",
-        "output\${COMP}\x86\${CONFIG}\bin\wrjpgcom.exe",
-    };
-     
-    build-command:@"
-        copy jconfig.vc jconfig.h       
-        copy makejsln.v10 makejsln.sln
-        copy makeasln.v10 makeasln.sln
-        copy makejvcx.v10 jpeg.vcxproj
-        copy makelvcx.v10 jpegdll.vcxproj
-        copy makecvcx.v10 cjpeg.vcxproj
-        copy makedvcx.v10 djpeg.vcxproj
-        copy maketvcx.v10 jpegtran.vcxproj
-        copy makewvcx.v10 wrjpgcom.vcxproj
-        copy makervcx.v10 rdjpgcom.vcxproj
-        msbuild /p:Platform=Win32 /p:Configuration=Release makejsln.sln
-        msbuild /p:Platform=Win32 /p:Configuration=Release makeasln.sln
-    ";
-     
-    clean-command:@"
-        attrib -S -H -R *
-        del /Q *.sdf *.suo *.sln *.vcxproj *.user jconfig.h 2>NUL
-        rmdir /S /Q output 2>NUL
-    ";
+    set: PLAT=x86;
+    uses: base;
 };
 
 x64 {
+    set: PLAT=x64;
+    uses: base;
+};
+
+base {
     set: {
         CONFIG="${CONFIG??Release}";
         COMP="${COMP??vc10}";
+        PLAT="${PLAT??x86}";
     };
 
     compiler:"${COMP}";
-    platform: x64;
+    platform:"${PLAT}";
      
     targets: { 
         // main library
-        "output\${COMP}\x64\${CONFIG}\bin\jpeg.lib",
-        "output\${COMP}\x64\${CONFIG}\bin\jpegs.lib",
-        "output\${COMP}\x64\${CONFIG}\bin\jpeg.dll",                
+        "output\${COMP}\${PLAT}\${CONFIG}\bin\jpeg.lib",
+        "output\${COMP}\${PLAT}\${CONFIG}\bin\jpegs.lib",
+        "output\${COMP}\${PLAT}\${CONFIG}\bin\jpeg.dll",                
         // extra utilities
-        "output\${COMP}\x64\${CONFIG}\bin\cjpeg.exe",
-        "output\${COMP}\x64\${CONFIG}\bin\djpeg.exe",
-        "output\${COMP}\x64\${CONFIG}\bin\jpegtran.exe",
-        "output\${COMP}\x64\${CONFIG}\bin\rdjpgcom.exe",
-        "output\${COMP}\x64\${CONFIG}\bin\wrjpgcom.exe",
+        "output\${COMP}\${PLAT}\${CONFIG}\bin\cjpeg.exe",
+        "output\${COMP}\${PLAT}\${CONFIG}\bin\djpeg.exe",
+        "output\${COMP}\${PLAT}\${CONFIG}\bin\jpegtran.exe",
+        "output\${COMP}\${PLAT}\${CONFIG}\bin\rdjpgcom.exe",
+        "output\${COMP}\${PLAT}\${CONFIG}\bin\wrjpgcom.exe",
     };
      
     build-command:@"
@@ -208,8 +170,18 @@ x64 {
         copy maketvcx.v10 jpegtran.vcxproj
         copy makewvcx.v10 wrjpgcom.vcxproj
         copy makervcx.v10 rdjpgcom.vcxproj
-        msbuild /p:Platform=x64 /p:Configuration=${CONFIG} makejsln.sln
-        msbuild /p:Platform=x64 /p:Configuration=${CONFIG} makeasln.sln
+
+        REM this makes it so that DLLs can have their own SxS Activation Context in an embedded resource.
+		echo %_CL% | findstr ISOLATION_AWARE || set _CL=%CL% /D ISOLATION_AWARE_ENABLED
+        
+        if ""${PLAT}"" == ""x86"" (
+            msbuild /p:Platform=Win32 /p:Configuration=${CONFIG} makejsln.sln
+            msbuild /p:Platform=Win32 /p:Configuration=${CONFIG} makeasln.sln
+        ) else (
+            msbuild /p:Platform=x64 /p:Configuration=${CONFIG} makejsln.sln
+            msbuild /p:Platform=x64 /p:Configuration=${CONFIG} makeasln.sln
+        )
+        
     ";
      
     clean-command:@"
