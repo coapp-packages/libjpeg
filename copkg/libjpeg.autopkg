@@ -17,8 +17,8 @@ package {
 }
 
 metadata {
-    summary: "liblibjpeg";
-    description:  @"libjpeg"; 
+    summary: "libjpeg";
+    description: @"This package contains C software to implement JPEG image encoding, decoding, and transcoding.  JPEG (pronounced 'jay-peg') is a standardized compression method for full-color and gray-scale images."; 
     icon: @"libjpeg.png";
     author-version : "8c";
     bug-tracker: "https://github.com/coapp-packages/libjpeg/issues";
@@ -29,7 +29,7 @@ metadata {
 }
 
 license[GPL] {
-    license-url: "";
+    license-url: "http://www.gnu.org/licenses/gpl.html";
     license-type: "GPL";
 }
 
