@@ -1,6 +1,11 @@
 @import "version.inc" ;
 @import "outercurve.inc" ;
 
+#define { 
+    flavor: "${COMP??vc10}"; 
+    arch : "${PLAT??x86}";
+}
+
 package {
     name: "libjpeg-dev[${flavor}]";
     version: "${package-version}";
