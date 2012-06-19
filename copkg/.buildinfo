@@ -3,8 +3,8 @@
 
 #product-info  {
     product-name: "libjpeg";
-    version: "8c";
-    original-source-location: "http://ijg.org/files/jpegsr8c.zip";
+    version: "8d";
+    original-source-location: "http://ijg.org/files/jpegsr8d.zip";
     original-source-website: "http://ijg.org";
     license: "Custom license, see README";
     packager: "Rafael Rivera <rafael@withinwindows.com>";
