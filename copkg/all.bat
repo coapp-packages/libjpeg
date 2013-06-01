@@ -41,5 +41,4 @@ goto :eof
 :clean
 rd /s /q libjpeg\libjpeg\Debug
 rd /s /q libjpeg\libjpeg\Release
-del ..\jconfig.h
 
