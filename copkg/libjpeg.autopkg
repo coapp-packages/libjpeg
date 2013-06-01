@@ -24,6 +24,7 @@ Homepage: http://www.ijg.org/";
 			..\jconfig.h,
 			..\jpeglib.h,
 			..\jmorecfg.h,
+			..\jerror.h,
 			};
 
 		source += {
