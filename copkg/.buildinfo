@@ -1,192 +1,77 @@
-/* target information */
-@import "version.inc";
+@import default_tools;
 
-#product-info  {
-    product-name: "libjpeg";
-    version: "8d";
-    original-source-location: "http://ijg.org/files/jpegsr8d.zip";
-    original-source-website: "http://ijg.org";
-    license: "Custom license, see README";
-    packager: "Rafael Rivera <rafael@withinwindows.com>";
-}
- 
+ItemGroup { 
+        sources = "..\*.c";
+        headers = "..\*.h";
+}; 
 
-test {
-    set: {
-        COMPILERS="${COMPILERS??vc10}";
-        PLAT="${PLAT??x86,x64}";
+default {
+
+    .Copy {
+        SourceFiles : "@(sources)";
+        DestinationFolder = @"$(MSBuildThisFileDirectory)..\msvc\";
     };
-
-    default : false;
-    uses: release;
-    build-command: @"
-	    for %%A in (${COMPILERS}) do (
-            for %%B in (${PLAT}) do (
-                call :testroutine ""%%A"" ""%%B""
-            )
-        )
-        goto :eof
-
-:testroutine
-        pushd output\%~1\%~2\Release\bin\
-                
-        djpeg ..\..\..\..\..\testorig.jpg testout.jpg
-        fc /B testout.jpg ..\..\..\..\..\testimg.ppm
-        if ERRORLEVEL 1 goto failed
-
-        djpeg -bmp -color 256 ..\..\..\..\..\testorig.jpg testout.bmp
-        fc /B testout.bmp ..\..\..\..\..\testimg.bmp
-        if ERRORLEVEL 1 goto failed
-        
-        cjpeg ..\..\..\..\..\testimg.ppm testout.jpg
-        fc /B testout.jpg ..\..\..\..\..\testimg.jpg
-        if ERRORLEVEL 1 goto failed
-
-        cjpeg -progressive -optimize ..\..\..\..\..\testimg.ppm testout.jpg
-        fc /B testout.jpg ..\..\..\..\..\testimgp.jpg
-        if ERRORLEVEL 1 goto failed
-
-        goto passed
-:failed
-        echo ""Test(s) failed for (%~1,%~2)""
-:passed
-        popd
-        goto :eof
-    ";
-};
-
-package {
-    set: COMP="${COMP??vc10}";
-    set: PLAT="${PLAT??x86, x64}";
-    default : false;
-    uses : sign;
-
-    targets: { 
-        @"copkg\libjpeg[vc10]-${package-version}-x86.msi",
-        @"copkg\libjpeg-dev[vc10]-${package-version}-x86.msi",
-        @"copkg\libjpeg-dev-common-${package-version}-any.msi",
-        @"copkg\libjpeg[vc10]-${package-version}-x64.msi",
-        @"copkg\libjpeg-dev[vc10]-${package-version}-x64.msi"
+    .Copy {
+        SourceFiles : "@(headers)";
+        DestinationFolder = @"$(MSBuildThisFileDirectory)..\msvc\";
     };
- 
-    build-command : @"
-        pushd COPKG
-        autopackage libjpeg-dev-common.autopkg || goto failed
-        
-        for %%A in (${COMP}) do (
-            for %%B in (${PLAT}) do (
-                autopackage --COMP=%%A --PLAT=%%B libjpeg.autopkg libjpeg-dev.autopkg || goto failed
-            )
-        )
-        popd
-        ptk update-version
-    ";
-
-	clean-command: @"del COPKG\*.msi COPKG\*.wixpdb";
-};
-
-
-update-version {
-    default : false;
     
-    build-command : @"
-        REM auto-increment version.inc file...
-        
-        pushd COPKG
-        setlocal EnableDelayedExpansion
-        for /F ""tokens=4,5,6,7  delims=.; "" %%v in (version.inc) do (
-            set /a build=%%y + 1
-            set VERSTRING=#define { package-version: %%v.%%w.%%x.!build!; }
-        )
-        echo !VERSTRING! > version.inc
-        popd
-    ";
-}
-
-release {
-    set: {
-        COMPILERS="${COMPILERS??vc10}";
-        PLAT="${PLAT??x86, x64}";
-        CONFIG="Release";
+    .Copy {
+        SourceFiles : {
+            $(MSBuildThisFileDirectory)vcxproj.inc,
+            $(MSBuildThisFileDirectory)..\jconfig.vc,
+            $(MSBuildThisFileDirectory)..\makejsln.v11,
+            $(MSBuildThisFileDirectory)..\makeasln.v11,
+            $(MSBuildThisFileDirectory)..\makelvcx.v11,
+            $(MSBuildThisFileDirectory)..\makecvcx.v11,
+            $(MSBuildThisFileDirectory)..\makedvcx.v11,
+            $(MSBuildThisFileDirectory)..\maketvcx.v11,
+            $(MSBuildThisFileDirectory)..\makewvcx.v11,
+            $(MSBuildThisFileDirectory)..\makervcx.v11,
+        };
+        DestinationFiles : {
+            $(MSBuildThisFileDirectory)..\msvc\vcxproj.inc,
+            $(MSBuildThisFileDirectory)..\msvc\jconfig.h,
+            $(MSBuildThisFileDirectory)..\msvc\makejsln.sln,
+            $(MSBuildThisFileDirectory)..\msvc\makeasln.sln,
+            $(MSBuildThisFileDirectory)..\msvc\jpeg.vcxproj,
+            $(MSBuildThisFileDirectory)..\msvc\cjpeg.vcxproj,
+            $(MSBuildThisFileDirectory)..\msvc\djpeg.vcxproj,
+            $(MSBuildThisFileDirectory)..\msvc\jpegtran.vcxproj,
+            $(MSBuildThisFileDirectory)..\msvc\wrjpgcom.vcxproj,
+            $(MSBuildThisFileDirectory)..\msvc\rdjpgcom.vcxproj,
+        };
     };
-
-    build-command: @"
-        for %%A in (${COMPILERS}) do (
-            for %%B in (${PLAT}) do (
-			    ptk -nologo base --CONFIG=${CONFIG} --COMP=%%A --PLAT=%%B
-		    )
-        )
-    ";
-};
-
-sign {
-    default : false;
-    uses: release;
-    build-command: @"simplesigner.exe --nologo --sign output\**.dll output\**.exe";
-};
-
-
-x86 {
-    set: PLAT=x86;
-    uses: base;
-};
-
-x64 {
-    set: PLAT=x64;
-    uses: base;
-};
-
-base {
-    set: {
-        CONFIG="${CONFIG??Release}";
-        COMP="${COMP??vc10}";
-        PLAT="${PLAT??x86}";
-    };
-
-    compiler:"${COMP}";
-    platform:"${PLAT}";
-     
-    targets: { 
-        // main library
-        "output\${COMP}\${PLAT}\${CONFIG}\bin\jpeg.lib",
-        "output\${COMP}\${PLAT}\${CONFIG}\bin\jpegs.lib",
-        "output\${COMP}\${PLAT}\${CONFIG}\bin\jpeg.dll",                
-        // extra utilities
-        "output\${COMP}\${PLAT}\${CONFIG}\bin\cjpeg.exe",
-        "output\${COMP}\${PLAT}\${CONFIG}\bin\djpeg.exe",
-        "output\${COMP}\${PLAT}\${CONFIG}\bin\jpegtran.exe",
-        "output\${COMP}\${PLAT}\${CONFIG}\bin\rdjpgcom.exe",
-        "output\${COMP}\${PLAT}\${CONFIG}\bin\wrjpgcom.exe",
-    };
-     
-    build-command:@"
-        copy jconfig.vc jconfig.h       
-        copy makejsln.v10 makejsln.sln
-        copy makeasln.v10 makeasln.sln
-        copy makejvcx.v10 jpeg.vcxproj
-        copy makelvcx.v10 jpegdll.vcxproj
-        copy makecvcx.v10 cjpeg.vcxproj
-        copy makedvcx.v10 djpeg.vcxproj
-        copy maketvcx.v10 jpegtran.vcxproj
-        copy makewvcx.v10 wrjpgcom.vcxproj
-        copy makervcx.v10 rdjpgcom.vcxproj
-
-        REM this makes it so that DLLs can have their own SxS Activation Context in an embedded resource.
-		echo %_CL% | findstr ISOLATION_AWARE || set _CL=%CL% /D ISOLATION_AWARE_ENABLED
         
-        if ""${PLAT}"" == ""x86"" (
-            msbuild /p:Platform=Win32 /p:Configuration=${CONFIG} makejsln.sln
-            msbuild /p:Platform=Win32 /p:Configuration=${CONFIG} makeasln.sln
-        ) else (
-            msbuild /p:Platform=x64 /p:Configuration=${CONFIG} makejsln.sln
-            msbuild /p:Platform=x64 /p:Configuration=${CONFIG} makeasln.sln
-        )
+	("v110, v100", "Win32, x64", "Debug,Release", "Dynamic, Static", "cdecl") => {
+		.PushEnvironment {};
+		.LoadSystemEnvironment {};
+        .SetEnvironmentFromTarget.Target = "VC_${0}_${1}";
+		.Message.Text = @"
+
+
+
+        Env:        ${0}-${1}  :  ${2}  ${3}  ${4}
+        EnvExists:  $(IsEnvironmentValid)";
         
-    ";
-     
-    clean-command:@"
-        attrib -S -H -R *
-        del /Q *.sdf *.suo *.sln *.vcxproj *.user jconfig.h 2>NUL
-        rmdir /S /Q output 2>NUL
-    ";
+        .Exec {
+            Condition="$(IsEnvironmentValid)";
+            Command = @"msbuild $(MSBuildThisFileDirectory)..\msvc\makejsln.sln /p:PlatformToolset=${0};Platform=${1};Configuration=${2};UsesConfigurationType=${3};CallingConvention=${4}";
+        };
+        .Exec {
+            Condition="$(IsEnvironmentValid)";
+            Command = @"msbuild $(MSBuildThisFileDirectory)..\msvc\makeasln.sln /p:PlatformToolset=${0};Platform=${1};Configuration=${2};UsesConfigurationType=${3};CallingConvention=${4}";
+        };
+        
+        .PopEnvironment{};
+	};
+	
+};
+
+clean {
+    .RemoveDir.Directories = @"$(MSBuildThisFileDirectory)..\msvc\intermediate";
+};
+
+nuke {
+    .RemoveDir.Directories = @"$(MSBuildThisFileDirectory)..\msvc\output";
 };

@@ -9,17 +9,14 @@ if "%1"=="noclean" (
 setlocal
 call "C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\vcvarsall.bat" amd64
 call :build x64 Release v110 || goto :eof
-REM call :build x64 Debug v110 || goto :eof
+call :build x64 Debug v110 || goto :eof
 endlocal
 
 setlocal
 call "C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\vcvarsall.bat" x86
 call :build Win32 Release v110 || goto :eof
-REM call :build Win32 Debug v110 || goto :eof
+call :build Win32 Debug v110 || goto :eof
 endlocal
-
-REM TODO - DELETE THE FOLLOWING LINE
-goto :eof
 
 setlocal
 call "C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\vcvarsall.bat" amd64
@@ -56,7 +53,7 @@ copy makewvcx.v11 msvc\wrjpgcom.vcxproj
 copy makervcx.v11 msvc\rdjpgcom.vcxproj
 copy *.h msvc
 copy *.c msvc
-	
+
 msbuild /P:Platform=%1 /P:Configuration=%2 /P:PlatformToolset=%3 /P:ConfigurationType=DynamicLibrary /P:CallingConvention=Cdecl   msvc\makejsln.sln || goto :eof
 msbuild /P:Platform=%1 /P:Configuration=%2 /P:PlatformToolset=%3 /P:ConfigurationType=StaticLibrary /P:CallingConvention=Cdecl    msvc\makejsln.sln || goto :eof
 msbuild /P:Platform=%1 /P:Configuration=%2 /P:PlatformToolset=%3 /P:ConfigurationType=DynamicLibrary /P:CallingConvention=stdcall msvc\makejsln.sln || goto :eof
