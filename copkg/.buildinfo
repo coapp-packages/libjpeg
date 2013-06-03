@@ -18,7 +18,6 @@ default {
     
     .Copy {
         SourceFiles : {
-            $(MSBuildThisFileDirectory)vcxproj.inc,
             $(MSBuildThisFileDirectory)..\jconfig.vc,
             $(MSBuildThisFileDirectory)..\makejsln.v11,
             $(MSBuildThisFileDirectory)..\makeasln.v11,
@@ -30,7 +29,6 @@ default {
             $(MSBuildThisFileDirectory)..\makervcx.v11,
         };
         DestinationFiles : {
-            $(MSBuildThisFileDirectory)..\msvc\vcxproj.inc,
             $(MSBuildThisFileDirectory)..\msvc\jconfig.h,
             $(MSBuildThisFileDirectory)..\msvc\makejsln.sln,
             $(MSBuildThisFileDirectory)..\msvc\makeasln.sln,
@@ -43,7 +41,7 @@ default {
         };
     };
         
-	("v110, v100", "Win32, x64", "Debug,Release", "Dynamic, Static", "cdecl") => {
+	("v110, v100", "Win32, x64", "Debug,Release", "Dynamic, Static, ltcg", "cdecl") => {
 		.PushEnvironment {};
 		.LoadSystemEnvironment {};
         .SetEnvironmentFromTarget.Target = "VC_${0}_${1}";

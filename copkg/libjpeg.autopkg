@@ -21,10 +21,10 @@ Homepage: http://www.ijg.org/";
 
 	files {
 		include: {
-			..\jconfig.h,
-			..\jpeglib.h,
-			..\jmorecfg.h,
-			..\jerror.h,
+			..\msvc\jconfig.h,
+			..\msvc\jpeglib.h,
+			..\msvc\jmorecfg.h,
+			..\msvc\jerror.h,
 			};
 
 		source += {
@@ -32,11 +32,16 @@ Homepage: http://www.ijg.org/";
 			..\*.h,
 		};
 
-		("release,debug", "Win32,x64", "v100,v110") => {
-			[${0},${1},${2}] {
-				lib:     { libjpeg\${0}\${1}\${2}\libjpeg.lib };
-				bin:     { libjpeg\${0}\${1}\${2}\libjpeg.dll };
-				symbols: { libjpeg\${0}\${1}\${2}\libjpeg.pdb };
+		("v100,v110", "Win32,x64", "release,debug", "Dynamic", "cdecl") => {
+			[${0},${1},${2},${3},${4}] {
+				lib:     { ..\msvc\output\${0}\${1}\${2}\${3}\${4}\lib\jpeg.lib };
+				bin:     { ..\msvc\output\${0}\${1}\${2}\${3}\${4}\lib\jpeg.dll };
+				symbols: { ..\msvc\output\${0}\${1}\${2}\${3}\${4}\lib\jpeg.pdb };
+			};
+		};
+		("v100,v110", "Win32,x64", "release,debug", "Static,ltcg", "cdecl") => {
+			[${0},${1},${2},${3},${4}] {
+				lib:     { ..\msvc\output\${0}\${1}\${2}\${3}\${4}\lib\jpeg.lib };
 			};
 		};
 	};
