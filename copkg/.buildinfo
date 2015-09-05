@@ -41,24 +41,21 @@ default {
         };
     };
         
-	("v110, v100", "Win32, x64", "Debug,Release", "Dynamic, Static, ltcg", "cdecl") => {
-		.PushEnvironment {};
-		.LoadSystemEnvironment {};
-        .SetEnvironmentFromTarget.Target = "VC_${0}_${1}";
-		.Message.Text = @"
+	("v100,v110,v120,v140", "Win32, x64", "Debug,Release", "Dynamic, Static, ltcg", "cdecl") => {
+        // Can't use this until PTK supports VS2015
+		// .PushEnvironment {};
+		// .LoadSystemEnvironment {};
+        // .SetEnvironmentFromTarget.Target = "VC_${0}_${1}";
+		// .Message.Text = @"
 
 
 
-        Env:        ${0}-${1}  :  ${2}  ${3}  ${4}
-        EnvExists:  $(IsEnvironmentValid)";
+        // Env:        ${0}-${1}  :  ${2}  ${3}  ${4}
+        // EnvExists:  $(IsEnvironmentValid)";
         
         .Exec {
-            Condition="$(IsEnvironmentValid)";
-            Command = @"msbuild $(MSBuildThisFileDirectory)..\msvc\makejsln.sln /p:PlatformToolset=${0};Platform=${1};Configuration=${2};UsesConfigurationType=${3};CallingConvention=${4}";
-        };
-        .Exec {
-            Condition="$(IsEnvironmentValid)";
-            Command = @"msbuild $(MSBuildThisFileDirectory)..\msvc\makeasln.sln /p:PlatformToolset=${0};Platform=${1};Configuration=${2};UsesConfigurationType=${3};CallingConvention=${4}";
+            // Condition="$(IsEnvironmentValid)";
+            Command = @"makeone.bat ${0} ${1} ${2} ${3} ${4}";
         };
         
         .PopEnvironment{};
