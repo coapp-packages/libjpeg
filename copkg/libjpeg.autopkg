@@ -34,14 +34,14 @@ Homepage: http://www.ijg.org/";
 
 		("v100,v110", "Win32,x64", "release,debug", "Dynamic", "cdecl") => {
 			[${0},${1},${2},${3},${4}] {
-				lib:     { ..\msvc\output\${0}\${1}\${2}\${3}\${4}\lib\jpeg.lib };
-				bin:     { ..\msvc\output\${0}\${1}\${2}\${3}\${4}\lib\jpeg.dll };
-				symbols: { ..\msvc\output\${0}\${1}\${2}\${3}\${4}\lib\jpeg.pdb };
+				lib:     { ..\msvc\output\${0}\${1}\${2}\${3}\${4}\jpeg.lib };
+				bin:     { ..\msvc\output\${0}\${1}\${2}\${3}\${4}\jpeg.dll };
+				symbols: { ..\msvc\output\${0}\${1}\${2}\${3}\${4}\jpeg.pdb };
 			};
 		};
 		("v100,v110", "Win32,x64", "release,debug", "Static,ltcg", "cdecl") => {
 			[${0},${1},${2},${3},${4}] {
-				lib:     { ..\msvc\output\${0}\${1}\${2}\${3}\${4}\lib\jpeg.lib };
+				lib:     { ..\msvc\output\${0}\${1}\${2}\${3}\${4}\jpeg.lib };
 			};
 		};
 	};
