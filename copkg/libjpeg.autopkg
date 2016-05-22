@@ -23,9 +23,9 @@ nuget {
 		summary: "This package contains C software to implement JPEG image encoding, decoding, and transcoding.";
 		description: @"This package contains C software to implement JPEG image encoding, decoding, and transcoding.
 Homepage: http://www.ijg.org/";
-		releaseNotes: "Release of 8d libraries.";
+		releaseNotes: "Release of 9b libraries.";
 		copyright: Copyright 2013;
-		tags: { jpeg, native, CoApp };
+		tags: { jpeg, native, CoApp, v120, v140 };
 
 	};
 
