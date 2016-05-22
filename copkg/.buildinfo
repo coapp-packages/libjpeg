@@ -41,7 +41,7 @@ default {
         };
     };
         
-	("v100,v110,v120,v140", "Win32, x64", "Debug,Release", "Dynamic, Static, ltcg", "cdecl") => {
+	("v120,v140", "Win32, x64", "Debug,Release", "Dynamic, Static, ltcg", "cdecl") => {
         // Can't use this until PTK supports VS2015
 		// .PushEnvironment {};
 		// .LoadSystemEnvironment {};

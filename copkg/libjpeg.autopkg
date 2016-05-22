@@ -1,6 +1,6 @@
 @import @"version.inc";
 
-#define { toolsets: "v100,v110,v120,v140"; }
+#define { toolsets: "v120,v140"; }
 
 configurations {
 	UserPlatformToolset {
